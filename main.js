@@ -59,7 +59,7 @@ async function getMatchData(puuid, userChampion, enemyChampion) {
     return results;
 }
 
-function calculateBestBuild(matchData) {
+function calculateBestBuild(matchData, myChampion, enemyChampion) {
     const itemWinRate = {};
 
     let wins = 0;
@@ -92,6 +92,7 @@ function calculateBestBuild(matchData) {
     })).sort((a, b) => b.winRate - a.winRate);
 
     return {
+        matchUp: `${myChampion} vs ${enemyChampion}`,
         matchCount: matchData.length,
         winRate: wins / matchData.length,
         bestItems: sorted.slice(0, 5)
@@ -99,13 +100,15 @@ function calculateBestBuild(matchData) {
 }
 
 app.get('/', async (req, res) => {
+    const { myChampion, enemyChampion } = req.query;
+
     const account = await getAccountPUUID('Hide on bush', 'KR1');
 
-    const matchData = await getMatchData(account.puuid, "Yone", "Galio");
+    const matchData = await getMatchData(account.puuid, myChampion, enemyChampion);
 
     console.log(matchData);
 
-    const bestBuild = calculateBestBuild(matchData);
+    const bestBuild = calculateBestBuild(matchData, myChampion, enemyChampion);
 
     res.json(bestBuild);
 });
